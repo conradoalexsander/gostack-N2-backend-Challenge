@@ -11,6 +11,8 @@ export default class AddingCategoriesTable1593558026073
             name: 'id',
             type: 'integer',
             isPrimary: true,
+            isGenerated: true,
+            generationStrategy: 'increment',
           },
           {
             name: 'title',
