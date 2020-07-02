@@ -1,13 +1,22 @@
 import { Router, Request, Response } from 'express';
-import { getCustomRepository, TransactionRepository } from 'typeorm';
+import { getCustomRepository } from 'typeorm';
+
+import multer from 'multer';
+
+import uploadConfig from '../config/upload';
+
 import CreateTransactionService from '../services/CreateTransactionService';
 
 import TransactionsRepository from '../repositories/TransactionsRepository';
-// import CreateTransactionService from '../services/CreateTransactionService';
-// import DeleteTransactionService from '../services/DeleteTransactionService';
-// import ImportTransactionsService from '../services/ImportTransactionsService';
+
+import DeleteTransactionService from '../services/DeleteTransactionService';
+import ImportTransactionsService from '../services/ImportTransactionsService';
+
+import ensureBalance from '../middlewares/ensureBalance';
 
 const transactionsRouter = Router();
+
+const upload = multer(uploadConfig);
 
 transactionsRouter.get('/', async (request: Request, response: Response) => {
   // TODO
@@ -24,32 +33,61 @@ transactionsRouter.get('/', async (request: Request, response: Response) => {
   }
 });
 
-transactionsRouter.post('/', async (request: Request, response: Response) => {
-  // TODO
-  try {
-    const { title, value, type, category } = request.body;
+transactionsRouter.post(
+  '/',
+  ensureBalance,
+  async (request: Request, response: Response) => {
+    // TODO
+    try {
+      const { title, value, type, category } = request.body;
 
-    const createTransaction = new CreateTransactionService();
+      const createTransaction = new CreateTransactionService();
 
-    const transaction = await createTransaction.execute({
-      title,
-      value,
-      type,
-      category,
-    });
+      const transaction = await createTransaction.execute({
+        title,
+        value,
+        type,
+        category,
+      });
 
-    return response.json(transaction);
-  } catch (err) {
-    return response.status(400).json({ error: err.message });
-  }
-});
+      return response.json(transaction);
+    } catch (err) {
+      return response.status(400).json({ error: err.message });
+    }
+  },
+);
 
-transactionsRouter.delete('/:id', async (request, response) => {
-  // TODO
-});
+transactionsRouter.delete(
+  '/:id',
+  async (request: Request, response: Response) => {
+    // TODO
+    try {
+      const { id } = request.params;
 
-transactionsRouter.post('/import', async (request, response) => {
-  // TODO
-});
+      const deleteTransaction = new DeleteTransactionService();
+
+      const deletResult = await deleteTransaction.execute(id);
+
+      return response.json(deletResult);
+    } catch (err) {
+      return response.status(400).json({ error: err.message });
+    }
+  },
+);
+
+transactionsRouter.post(
+  '/import',
+  upload.single('file'),
+  async (request: Request, response: Response) => {
+    // TODO
+
+    const { filename } = request.file;
+
+    const importTransactionsService = new ImportTransactionsService();
+    const data = await importTransactionsService.execute(filename);
+
+    return response.json(data);
+  },
+);
 
 export default transactionsRouter;
