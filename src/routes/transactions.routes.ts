@@ -12,8 +12,6 @@ import TransactionsRepository from '../repositories/TransactionsRepository';
 import DeleteTransactionService from '../services/DeleteTransactionService';
 import ImportTransactionsService from '../services/ImportTransactionsService';
 
-import ensureBalance from '../middlewares/ensureBalance';
-
 const transactionsRouter = Router();
 
 const upload = multer(uploadConfig);
@@ -33,29 +31,22 @@ transactionsRouter.get('/', async (request: Request, response: Response) => {
   }
 });
 
-transactionsRouter.post(
-  '/',
-  ensureBalance,
-  async (request: Request, response: Response) => {
-    // TODO
-    try {
-      const { title, value, type, category } = request.body;
+transactionsRouter.post('/', async (request: Request, response: Response) => {
+  // TODO
 
-      const createTransaction = new CreateTransactionService();
+  const { title, value, type, category } = request.body;
 
-      const transaction = await createTransaction.execute({
-        title,
-        value,
-        type,
-        category,
-      });
+  const createTransaction = new CreateTransactionService();
 
-      return response.json(transaction);
-    } catch (err) {
-      return response.status(400).json({ error: err.message });
-    }
-  },
-);
+  const transaction = await createTransaction.execute({
+    title,
+    value,
+    type,
+    category,
+  });
+
+  return response.json(transaction);
+});
 
 transactionsRouter.delete(
   '/:id',

@@ -5,6 +5,8 @@ import Transaction from '../models/Transaction';
 import TransactionRepository from '../repositories/TransactionsRepository';
 import Category from '../models/Category';
 
+import AppError from '../errors/AppError';
+
 interface TransactionDTO {
   title: string;
   value: number;
@@ -22,6 +24,12 @@ class CreateTransactionService {
     // TODO
     const transactionsRepository = getCustomRepository(TransactionRepository);
     const categoryRepository = getRepository(Category);
+
+    const balance = await transactionsRepository.getBalance();
+
+    if (type === 'outcome' && value > balance.total) {
+      throw new AppError('Not enough balance', 400);
+    }
 
     const dbCategory = await categoryRepository.findOne({
       where: { title: category },
