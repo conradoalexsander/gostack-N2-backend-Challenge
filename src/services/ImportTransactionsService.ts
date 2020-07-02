@@ -40,16 +40,18 @@ class ImportTransactionsService {
       },
     });
 
-    const teste: TransactionDTO[] = importedData.data as TransactionDTO[];
+    const transactions: TransactionDTO[] = importedData.data as TransactionDTO[];
 
-    const formatedData: Array<TransactionDTO> = teste.map(transaction => {
-      let { title, type, category } = transaction;
-      const { value } = transaction;
-      title = title.trim();
-      type = type.trim() as 'income' | 'outcome';
-      category = category.trim();
-      return { title, category, value, type };
-    });
+    const formatedData: Array<TransactionDTO> = transactions.map(
+      transaction => {
+        let { title, type, category } = transaction;
+        const { value } = transaction;
+        title = title.trim();
+        type = type.trim() as 'income' | 'outcome';
+        category = category.trim();
+        return { title, category, value, type };
+      },
+    );
 
     formatedData.forEach(transaction => {
       const { category } = transaction;
@@ -58,7 +60,6 @@ class ImportTransactionsService {
       }
     });
 
-    // /
     const categoriesRepository = getRepository(Category);
 
     const existentCategories = await categoriesRepository.find({
